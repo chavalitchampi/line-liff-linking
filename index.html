@@ -1,79 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>ผูกบัญชี LINE</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ผูกบัญชี LINE กับระบบ</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: sans-serif;
       text-align: center;
-      background: #f9f9f9;
-      padding: 2rem;
+      padding: 40px;
+      background-color: #f5f5f5;
     }
     h1 {
-      color: #06c755;
-      margin-bottom: 1rem;
+      margin-bottom: 20px;
     }
-    button {
-      background-color: #06c755;
-      border: none;
-      padding: 1rem 2rem;
+    #linkBtn {
+      padding: 15px 40px;
+      font-size: 18px;
+      background-color: #00c300;
       color: white;
-      font-size: 1.2rem;
-      border-radius: 8px;
+      border: none;
+      border-radius: 10px;
       cursor: pointer;
     }
-    button:disabled {
-      background-color: #a5d6a7;
-      cursor: not-allowed;
+    #status {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #555;
     }
   </style>
 </head>
 <body>
   <h1>ผูกบัญชี LINE กับระบบ</h1>
-  <p id="welcome"></p>
   <button id="linkBtn" disabled>กำลังโหลด...</button>
+  <div id="status"></div>
 
   <script>
     const webAppURL = "https://script.google.com/macros/s/AKfycbwsjRpfNIMt86il0szViNe_tuXsAotuLiDuZbzm_zAWVaWS45vbfXezYjbXoglDd-r3Ww/exec";
-    const liffId = "2007831218-0Dg27MV7"; // LIFF ID ของคุณ
 
-    async function main() {
-      await liff.init({ liffId });
+    async function initLIFF() {
+      try {
+        await liff.init({ liffId: "2007831218-0Dg27MV7" });
 
-      if (!liff.isLoggedIn()) {
-        liff.login();
-        return;
-      }
-
-      const profile = await liff.getProfile();
-      const userId = profile.userId;
-      document.getElementById("welcome").innerText = `ยินดีต้อนรับ ${profile.displayName}`;
-      
-      const btn = document.getElementById("linkBtn");
-      btn.innerText = "ผูกบัญชี";
-      btn.disabled = false;
-      btn.onclick = async () => {
-        try {
-          const res = await fetch(webAppURL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userId })
-          });
-          const result = await res.json();
-          alert(result.message || "ผูกบัญชีเรียบร้อยแล้ว");
-          liff.closeWindow();
-        } catch (err) {
-          alert("เกิดข้อผิดพลาดในการผูกบัญชี");
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
         }
-      };
+
+        const profile = await liff.getProfile();
+
+        document.getElementById("linkBtn").disabled = false;
+        document.getElementById("linkBtn").innerText = "ผูกบัญชี";
+
+        document.getElementById("linkBtn").addEventListener("click", async () => {
+          document.getElementById("linkBtn").disabled = true;
+          document.getElementById("status").innerText = "กำลังผูกบัญชี...";
+
+          try {
+            const res = await fetch(webAppURL, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                userId: profile.userId,
+                displayName: profile.displayName
+              })
+            });
+
+            const data = await res.json();
+            document.getElementById("status").innerText = "✅ ผูกบัญชีเรียบร้อยแล้ว";
+
+            setTimeout(() => liff.closeWindow(), 1500);
+          } catch (err) {
+            console.error("ส่งข้อมูลผิดพลาด", err);
+            document.getElementById("status").innerText = "❌ เกิดข้อผิดพลาดในการส่งข้อมูล";
+          }
+        });
+
+      } catch (err) {
+        console.error("LIFF Init Error:", err);
+        document.getElementById("status").innerText = "❌ ไม่สามารถโหลด LIFF ได้";
+      }
     }
 
-    main().catch(err => {
-      document.getElementById("linkBtn").innerText = "เกิดข้อผิดพลาด";
-      alert("ไม่สามารถโหลด LIFF ได้: " + err);
-    });
+    window.onload = initLIFF;
   </script>
 </body>
 </html>

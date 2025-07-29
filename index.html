@@ -34,28 +34,34 @@
 <body>
   <h1>ผูกบัญชี LINE กับระบบ</h1>
   <button id="linkBtn" disabled>กำลังโหลด...</button>
-  <div id="status"></div>
+  <div id="status">🚀 เริ่มโหลด LIFF...</div>
 
   <script>
     const webAppURL = "https://script.google.com/macros/s/AKfycbwsjRpfNIMt86il0szViNe_tuXsAotuLiDuZbzm_zAWVaWS45vbfXezYjbXoglDd-r3Ww/exec";
 
     async function initLIFF() {
       try {
+        document.getElementById("status").innerText = "⚙️ กำลังโหลด LIFF...";
         await liff.init({ liffId: "2007831218-0Dg27MV7" });
+        document.getElementById("status").innerText = "✅ โหลด LIFF สำเร็จ";
 
         if (!liff.isLoggedIn()) {
+          document.getElementById("status").innerText = "🔒 ยังไม่ได้ login → ไปหน้า login";
           liff.login();
           return;
         }
 
+        document.getElementById("status").innerText = "🔓 Login เรียบร้อย กำลังดึงโปรไฟล์...";
+
         const profile = await liff.getProfile();
+        document.getElementById("status").innerText = `👤 คุณคือ ${profile.displayName}`;
 
         document.getElementById("linkBtn").disabled = false;
         document.getElementById("linkBtn").innerText = "ผูกบัญชี";
 
         document.getElementById("linkBtn").addEventListener("click", async () => {
           document.getElementById("linkBtn").disabled = true;
-          document.getElementById("status").innerText = "กำลังผูกบัญชี...";
+          document.getElementById("status").innerText = "🔗 กำลังผูกบัญชี...";
 
           try {
             const res = await fetch(webAppURL, {
@@ -72,7 +78,7 @@
 
             setTimeout(() => liff.closeWindow(), 1500);
           } catch (err) {
-            console.error("ส่งข้อมูลผิดพลาด", err);
+            console.error("❌ ส่งข้อมูลผิดพลาด", err);
             document.getElementById("status").innerText = "❌ เกิดข้อผิดพลาดในการส่งข้อมูล";
           }
         });

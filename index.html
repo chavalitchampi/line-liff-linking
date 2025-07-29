@@ -27,7 +27,8 @@
     #status {
       margin-top: 20px;
       font-size: 16px;
-      color: #555;
+      color: #333;
+      white-space: pre-line;
     }
   </style>
 </head>
@@ -46,15 +47,15 @@
         document.getElementById("status").innerText = "✅ โหลด LIFF สำเร็จ";
 
         if (!liff.isLoggedIn()) {
-          document.getElementById("status").innerText = "🔒 ยังไม่ได้ login → ไปหน้า login";
+          document.getElementById("status").innerText += "\n🔑 ยังไม่ได้ Login → ไปหน้า Login...";
           liff.login();
           return;
         }
 
-        document.getElementById("status").innerText = "🔓 Login เรียบร้อย กำลังดึงโปรไฟล์...";
+        document.getElementById("status").innerText += "\n🔓 Login เรียบร้อย กำลังดึงโปรไฟล์...";
 
         const profile = await liff.getProfile();
-        document.getElementById("status").innerText = `👤 คุณคือ ${profile.displayName}`;
+        document.getElementById("status").innerText += `\n👤 คุณคือ ${profile.displayName}`;
 
         document.getElementById("linkBtn").disabled = false;
         document.getElementById("linkBtn").innerText = "ผูกบัญชี";
@@ -74,12 +75,13 @@
             });
 
             const data = await res.json();
-            document.getElementById("status").innerText = "✅ ผูกบัญชีเรียบร้อยแล้ว";
+            document.getElementById("status").innerText = "✅ ผูกบัญชีเรียบร้อยแล้ว 🎉";
 
             setTimeout(() => liff.closeWindow(), 1500);
           } catch (err) {
             console.error("❌ ส่งข้อมูลผิดพลาด", err);
             document.getElementById("status").innerText = "❌ เกิดข้อผิดพลาดในการส่งข้อมูล";
+            document.getElementById("linkBtn").disabled = false;
           }
         });
 
@@ -93,49 +95,3 @@
   </script>
 </body>
 </html>
-async function initLIFF() {
-  try {
-    await liff.init({ liffId: "2007831218-0Dg27MV7" });
-    document.getElementById("status").innerText = "✅ โหลด LIFF สำเร็จ";
-
-    if (!liff.isLoggedIn()) {
-      document.getElementById("status").innerText += "\n🔑 ยังไม่ได้ Login กำลังพาไป Login...";
-      liff.login();
-      return;
-    } else {
-      document.getElementById("status").innerText += "\n🔓 Login เรียบร้อย";
-    }
-
-    const profile = await liff.getProfile();
-    document.getElementById("status").innerText += `\n👤 สวัสดีคุณ ${profile.displayName}`;
-
-    document.getElementById("linkBtn").disabled = false;
-    document.getElementById("linkBtn").innerText = "ผูกบัญชี";
-
-    document.getElementById("linkBtn").addEventListener("click", async () => {
-      document.getElementById("linkBtn").disabled = true;
-      document.getElementById("status").innerText = "🔄 กำลังผูกบัญชี...";
-
-      try {
-        const res = await fetch(webAppURL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: profile.userId,
-            displayName: profile.displayName
-          })
-        });
-
-        const data = await res.json();
-        document.getElementById("status").innerText = "✅ ผูกบัญชีเรียบร้อยแล้ว";
-        setTimeout(() => liff.closeWindow(), 1500);
-      } catch (err) {
-        document.getElementById("status").innerText = "❌ ผูกบัญชีล้มเหลว";
-        console.error(err);
-      }
-    });
-  } catch (err) {
-    console.error("LIFF Init Error:", err);
-    document.getElementById("status").innerText = "❌ ไม่สามารถโหลด LIFF ได้";
-  }
-}

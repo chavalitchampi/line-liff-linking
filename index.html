@@ -6,10 +6,28 @@
   <title>ผูกบัญชี LINE บริษัท 1.x</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 50px; background: #eef; }
-    #linkBtn { padding: 15px 50px; font-size: 18px; background: #007aff; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+    body { 
+      font-family: sans-serif; 
+      text-align: center; 
+      padding: 50px; 
+      background: #eef; 
+    }
+    #linkBtn { 
+      padding: 15px 50px; 
+      font-size: 18px; 
+      background: #007aff; 
+      color: #fff; 
+      border: none; 
+      border-radius: 10px; 
+      cursor: pointer; 
+    }
     #linkBtn:disabled { background: #999; }
-    #status { margin-top: 20px; font-size: 16px; color: #333; white-space: pre-line; }
+    #status { 
+      margin-top: 20px; 
+      font-size: 16px; 
+      color: #333; 
+      white-space: pre-line; 
+    }
   </style>
 </head>
 <body>
@@ -18,8 +36,8 @@
   <div id="status">🚀 Loading LIFF...</div>
 
   <script>
-    const LIFF_ID = "2007847485-VAKdqypo";
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyzRgYUefNTlLBVXXsEX7PkfOHBqZ9mcLahLO__azv6z06a0jpr1f9DtV-m9S_5iPyC7w/exec";
+    const LIFF_ID = "2007847485-VAKdqypo"; // ใช้ LIFF ID ของคุณ
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgQurL_KAfJ--QLs_FN3hyk027ks3_96iuJsdSiYHx3kH3MQJyPDwnIhOl6oMFk9t5iw/exec";
 
     async function initLIFF() {
       try {
@@ -32,11 +50,11 @@
         }
 
         const profile = await liff.getProfile();
-        document.getElementById("status").innerText = `✅ Login สำเร็จ`;
+        document.getElementById("status").innerText = `👋 สวัสดีคุณ ${profile.displayName}`;
 
         const linkBtn = document.getElementById("linkBtn");
         linkBtn.disabled = false;
-        linkBtn.innerText = "ยืนยัน";
+        linkBtn.innerText = "ยืนยันผูกบัญชี";
 
         linkBtn.addEventListener("click", async () => {
           linkBtn.disabled = true;
@@ -50,8 +68,18 @@
             });
 
             const result = await res.json();
+
+            // เช็คว่าผูกบัญชีซ้ำ
+            if (result.status === "duplicate") {
+              document.getElementById("status").innerText = "ℹ️ คุณได้ผูกบัญชีไว้แล้ว ปิดหน้าต่าง...";
+              setTimeout(() => liff.closeWindow(), 1500);
+              return;
+            }
+
+            // ปกติ
             document.getElementById("status").innerText = result.message || "✅ ผูกบัญชีเรียบร้อย";
             setTimeout(() => liff.closeWindow(), 1500);
+
           } catch (err) {
             document.getElementById("status").innerText = "❌ เกิดข้อผิดพลาดในการส่งข้อมูล";
             linkBtn.disabled = false;
@@ -67,4 +95,3 @@
   </script>
 </body>
 </html>
-

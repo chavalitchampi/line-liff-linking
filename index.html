@@ -3,90 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ผูกบัญชี LINE กับระบบ</title>
+  <title>ผูกบัญชี LINE บริษัท 1.x</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 40px;
-      background-color: #f5f5f5;
-    }
-    h1 {
-      margin-bottom: 20px;
-    }
-    #linkBtn {
-      padding: 15px 40px;
-      font-size: 18px;
-      background-color: #00c300;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    #status {
-      margin-top: 20px;
-      font-size: 16px;
-      color: #333;
-      white-space: pre-line;
-    }
+    body { font-family: sans-serif; text-align: center; padding: 50px; background: #eef; }
+    #linkBtn { padding: 15px 50px; font-size: 18px; background: #007aff; color: #fff; border: none; border-radius: 10px; cursor: pointer; }
+    #linkBtn:disabled { background: #999; }
+    #status { margin-top: 20px; font-size: 16px; color: #333; white-space: pre-line; }
   </style>
 </head>
 <body>
-  <h1>ผูกบัญชี LINE กับระบบ</h1>
+  <h1>ยืนยันการผูกบัญชี</h1>
   <button id="linkBtn" disabled>กำลังโหลด...</button>
-  <div id="status">🚀 เริ่มโหลด LIFF...</div>
+  <div id="status">🚀 Loading LIFF...</div>
 
   <script>
-    const webAppURL = "https://script.google.com/macros/s/AKfycbyzRgYUefNTlLBVXXsEX7PkfOHBqZ9mcLahLO__azv6z06a0jpr1f9DtV-m9S_5iPyC7w/exec";
+    const LIFF_ID = "2007847485-VAKdqypo";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyzRgYUefNTlLBVXXsEX7PkfOHBqZ9mcLahLO__azv6z06a0jpr1f9DtV-m9S_5iPyC7w/exec";
 
     async function initLIFF() {
       try {
         document.getElementById("status").innerText = "⚙️ กำลังโหลด LIFF...";
-        await liff.init({ liffId: "2007847485-VAKdqypo" });
-        document.getElementById("status").innerText = "✅ โหลด LIFF สำเร็จ";
+        await liff.init({ liffId: LIFF_ID });
 
         if (!liff.isLoggedIn()) {
-          document.getElementById("status").innerText += "\n🔑 ยังไม่ได้ Login → ไปหน้า Login...";
           liff.login();
           return;
         }
 
-        document.getElementById("status").innerText += "\n🔓 Login เรียบร้อย กำลังดึงโปรไฟล์...";
-
         const profile = await liff.getProfile();
-        document.getElementById("status").innerText += `\n👤 คุณคือ ${profile.displayName}`;
+        document.getElementById("status").innerText = `✅ Login สำเร็จ`;
 
-        document.getElementById("linkBtn").disabled = false;
-        document.getElementById("linkBtn").innerText = "ผูกบัญชี";
+        const linkBtn = document.getElementById("linkBtn");
+        linkBtn.disabled = false;
+        linkBtn.innerText = "ยืนยัน";
 
-        document.getElementById("linkBtn").addEventListener("click", async () => {
-          document.getElementById("linkBtn").disabled = true;
+        linkBtn.addEventListener("click", async () => {
+          linkBtn.disabled = true;
           document.getElementById("status").innerText = "🔗 กำลังผูกบัญชี...";
 
           try {
-            const res = await fetch(webAppURL, {
+            const res = await fetch(WEB_APP_URL, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: profile.userId,
-              
-              })
+              body: JSON.stringify({ userId: profile.userId })
             });
 
-            const data = await res.json();
-            document.getElementById("status").innerText = "✅ ผูกบัญชีเรียบร้อยแล้ว 🎉";
-
+            const result = await res.json();
+            document.getElementById("status").innerText = result.message || "✅ ผูกบัญชีเรียบร้อย";
             setTimeout(() => liff.closeWindow(), 1500);
           } catch (err) {
-            console.error("❌ ส่งข้อมูลผิดพลาด", err);
             document.getElementById("status").innerText = "❌ เกิดข้อผิดพลาดในการส่งข้อมูล";
-            document.getElementById("linkBtn").disabled = false;
+            linkBtn.disabled = false;
           }
         });
 
       } catch (err) {
-        console.error("LIFF Init Error:", err);
         document.getElementById("status").innerText = "❌ ไม่สามารถโหลด LIFF ได้";
       }
     }
@@ -95,3 +67,4 @@
   </script>
 </body>
 </html>
+
